@@ -4,6 +4,10 @@
 
 An elegant, system-security-focused overlay panel (OSD) designed for desktop environments using Wayland. Built using **Quickshell** and **QML**, this utility runs light background shell processes to continuously audit and display critical system security, firewall, network health, and update matrices in real-time.
 
+# Hyprland keybinding example
+use the SecurityBar.sh in your keybinding:
+bind = SUPER, S, exec, ~/.config/quickshell/SecurityBar/SecurityBar.sh
+
 ---
 
 ## 🚀 Key Features
