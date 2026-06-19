@@ -52,7 +52,7 @@ ShellRoot {
                 if (!line) return
                     let trimmed = line.trim()
                     if (trimmed === "" || trimmed === "0 0") {
-                         netSpeed = "0 KB/s ↓↑ 0 KB/s"
+                        netSpeed = "0 KB/s ↓↑ 0 KB/s"
                         return
                     }
 
@@ -67,10 +67,10 @@ ShellRoot {
                         let deltaSec = deltaMs / 1000
 
                         if (deltaSec < 0.8 || deltaSec > 15 || isNaN(deltaSec)) {
-                             lastRxBytes = rx
+                            lastRxBytes = rx
                             lastTxBytes = tx
                             lastNetCheck = now
-                             netSpeed = "0 KB/s ↓↑ 0 KB/s"
+                            netSpeed = "0 KB/s ↓↑ 0 KB/s"
                             return
                         }
 
@@ -88,12 +88,12 @@ ShellRoot {
 
     function formatSpeed(bps) {
         if (bps < 1024) return "0 KB/s"
-             let kbps = bps / 1024
+            let kbps = bps / 1024
             if (kbps < 1024) return Math.round(kbps) + " KB/s"
                 let mbps = kbps / 1024
                 if (mbps < 1024) return mbps.toFixed(1) + " MB/s"
                     return (mbps / 1024).toFixed(1) + " GB/s"
-     }
+    }
 
     // ─── Other Network Processes ──────────────────────
     Process {
@@ -110,20 +110,20 @@ ShellRoot {
         id: internetCheckProc
         command: ["nmcli", "networking", "connectivity", "check"]
 
-         stdout: SplitParser {
+        stdout: SplitParser {
             onRead: function(line) {
                 if (!line) return
                     let status = line.trim()
 
                     if (status === "full") {
-                         internetStatus = "Internet UP"
+                        internetStatus = "Internet UP"
                         internetColor  = "#c0d0a0"
                     } else if (status === "none") {
                         internetStatus = "Internet Down"
-                         internetColor  = "#ff6666"
+                        internetColor  = "#ff6666"
                     } else if (status === "limited" || status === "portal") {
                         internetStatus = "Internet Limited"
-                         internetColor  = "#ffcc77"
+                        internetColor  = "#ffcc77"
                     } else {
                         internetStatus = "Internet ? (" + status + ")"
                         internetColor  = "#9999ff"
@@ -142,16 +142,16 @@ ShellRoot {
         stdout: SplitParser {
             onRead: function(line) {
                 if (!line) return
-                     let trimmed = line.trim()
+                    let trimmed = line.trim()
 
                     if (trimmed === "ufw") {
                         firewallStatus = "UFW Installed"
                         firewallActive = true
-                         firewallMessage = "Check Status:"
+                        firewallMessage = "Check Status:"
                         firewallAdvice = "sudo ufw status verbose"
                     }
                     else if (trimmed === "firewalld") {
-                         firewallStatus = "firewalld Installed"
+                        firewallStatus = "firewalld Installed"
                         firewallActive = true
                         firewallMessage = "Check Status:"
                         firewallAdvice = "sudo firewall-cmd --state\nsudo firewall-cmd --list-all"
@@ -159,13 +159,13 @@ ShellRoot {
                     else {
                         // No firewall found
                         firewallStatus = "No Firewall Detected"
-                         firewallActive = false
+                        firewallActive = false
                         firewallMessage = "A firewall is recommended"
                         firewallAdvice = "Install one of the following:\n\n" +
-                         "UFW (recommended for simplicity):\n" +
+                        "UFW (recommended for simplicity):\n" +
                         "sudo pacman -S ufw && sudo ufw enable && sudo systemctl enable --now ufw\n\n" +
                         "firewalld:\n" +
-                         "sudo pacman -S firewalld && sudo systemctl enable --now firewalld"
+                        "sudo pacman -S firewalld && sudo systemctl enable --now firewalld"
                     }
             }
         }
@@ -210,13 +210,13 @@ ShellRoot {
 
                 if (!line) {
                     lastUpdateText = "Last updated: error"
-                     pendingUpdatesText = "Error checking updates"
+                    pendingUpdatesText = "Error checking updates"
                     flatpakPendingText = "Error checking flatpak"
                     updatesOutdated = true
                     return
                 }
 
-                 let trimmed = line.trim()
+                let trimmed = line.trim()
                 if (trimmed === "") {
                     lastUpdateText = "Last updated: never"
                     pendingUpdatesText = "0 packages pending"
@@ -231,7 +231,7 @@ ShellRoot {
                     pendingUpdatesText = "Parse error"
                     flatpakPendingText = "Parse error"
                     updatesOutdated = true
-                     return
+                    return
                 }
 
                 let datePart = parts[0].trim() || "never"
@@ -249,15 +249,15 @@ ShellRoot {
 
                 if (datePart !== "never") {
                     let lastDate = Date.parse(datePart)
-                     if (!isNaN(lastDate)) {
+                    if (!isNaN(lastDate)) {
                         let ageDays = (new Date() - lastDate) / (1000 * 60 * 60 * 24)
                         updatesOutdated = ageDays > 2
-                     } else {
+                    } else {
                         updatesOutdated = true
                     }
                 } else {
                     updatesOutdated = true
-                 }
+                }
 
                 if ((archCount > 0 || flatCount > 0) && updatesOutdated) {
                     let notifyTitle = "System Updates Available"
@@ -268,7 +268,7 @@ ShellRoot {
                 }
             }
         }
-     }
+    }
 
     // ─── Copy helper process ──────────────────────────
     Process {
@@ -284,7 +284,7 @@ ShellRoot {
         id: openNetworkPanel
         command: [
             "env",
-             "QT_QUICK_BACKEND=software",
+            "QT_QUICK_BACKEND=software",
             "quickshell",
             "--path",
             "/home/ppk/.config/quickshell/NetworkSecurityBar/NetworkSecurityBar.qml"
@@ -311,7 +311,7 @@ ShellRoot {
         lynisCheckProc.running = true
 
         updatesChecking = true
-         pendingUpdatesText = "Checking..."
+        pendingUpdatesText = "Checking..."
         flatpakPendingText = "Checking..."
         updatesProc.running = true
 
@@ -324,7 +324,7 @@ ShellRoot {
         interval: 4000
         running: true
         repeat: true
-         onTriggered: {
+        onTriggered: {
             netSpeedProc.running = false;
             netSpeedProc.running = true
             localIPProc.running  = false;
@@ -353,7 +353,7 @@ ShellRoot {
             id: body
             x: window.implicitWidth
             y: 0
-             width: 340
+            width: 340
             height: parent.height
             color: "#121317"
             opacity: 0.92
@@ -361,7 +361,7 @@ ShellRoot {
             border.width: 1
             radius: 16
 
-             Behavior on x {
+            Behavior on x {
                 NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
             }
 
@@ -371,24 +371,24 @@ ShellRoot {
                 anchors.margins: 8
                 clip: true
 
-                 ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                ScrollBar.vertical.policy: ScrollBar.AsNeeded
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
                 ScrollBar.vertical.background: Rectangle {
                     visible: scrollView.ScrollBar.vertical.active
                     color: "#252627"
-                     radius: 6
+                    radius: 6
                 }
                 ScrollBar.vertical.contentItem: Rectangle {
                     radius: 6
                     color: "#252627"
-                     implicitWidth: 3
+                    implicitWidth: 3
                     implicitHeight: 40
                 }
 
                 Column {
                     width: scrollView.width
-                     spacing: 10
+                    spacing: 10
 
                     Rectangle {
                         width: parent.width
@@ -398,14 +398,14 @@ ShellRoot {
                         border.color: "#b0ac63"
                         border.width: 1
 
-                         Text {
+                        Text {
                             anchors.centerIn: parent
                             text: "System Security"
                             color: "#dde5a2"
-                             font.pixelSize: 28
+                            font.pixelSize: 28
                             font.family: "Monospace"
                             font.weight: Font.Bold
-                             font.letterSpacing: 2
+                            font.letterSpacing: 2
                         }
                     }
 
@@ -414,19 +414,19 @@ ShellRoot {
                     // ─── Arch + Flatpak Updates (moved to top) ───
                     Rectangle {
                         width: parent.width
-                         height: 42
+                        height: 42
                         radius: 10
                         color: Qt.rgba(0.22, 0.24, 0.21, 0.7)
                         border.color: "#555839"
-                         border.width: 1
+                        border.width: 1
 
                         Text {
                             anchors.centerIn: parent
                             text: "Arch Updates"
-                             color: "#b0ac63"
+                            color: "#b0ac63"
                             font.pixelSize: 20
                             font.family: "Monospace"
-                             font.weight: Font.Bold
+                            font.weight: Font.Bold
                         }
                     }
 
@@ -436,128 +436,128 @@ ShellRoot {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
                         text: lastUpdateText
-                         color: "#d0d0d0"
+                        color: "#d0d0d0"
                         font.pixelSize: 16
                         font.family: "Monospace"
                         wrapMode: Text.Wrap
-                     }
+                    }
 
                     Text {
                         id: pendingText
                         width: parent.width
-                         horizontalAlignment: Text.AlignHCenter
+                        horizontalAlignment: Text.AlignHCenter
                         text: updatesChecking ? "Checking..." : pendingUpdatesText
                         color: {
                             if (updatesChecking) return "#888888"
                                 if (updatesOutdated) return "#ff4444"
-                             return pendingUpdatesText.includes("0") ? "#c0d0a0" : "#e0c070"
+                                    return pendingUpdatesText.includes("0") ? "#c0d0a0" : "#e0c070"
                         }
                         font.pixelSize: 16
                         font.family: "Monospace"
-                         font.bold: updatesOutdated || (!updatesChecking && !pendingUpdatesText.includes("0"))
+                        font.bold: updatesOutdated || (!updatesChecking && !pendingUpdatesText.includes("0"))
                         wrapMode: Text.WordWrap
 
                         opacity: 1
                         Behavior on opacity { NumberAnimation { duration: 800 } }
 
-                         Timer {
+                        Timer {
                             interval: 1000
                             running: updatesOutdated && !updatesChecking
-                             repeat: true
+                            repeat: true
                             onTriggered: pendingText.opacity = pendingText.opacity === 1 ? 0.4 : 1
                         }
                     }
 
                     Text {
                         width: parent.width
-                         horizontalAlignment: Text.AlignHCenter
+                        horizontalAlignment: Text.AlignHCenter
                         text: "Flatpak updates"
                         color: "#b0ac63"
                         font.pixelSize: 18
-                         font.family: "Monospace"
+                        font.family: "Monospace"
                         font.weight: Font.Bold
                     }
 
                     Text {
-                         width: parent.width
+                        width: parent.width
                         horizontalAlignment: Text.AlignHCenter
                         text: flatpakPendingText
                         color: flatpakCount > 0 ? "#ff4444" : "#c0d0a0"
                         font.pixelSize: 16
                         font.family: "Monospace"
                         font.bold: flatpakCount > 0
-                         wrapMode: Text.WordWrap
+                        wrapMode: Text.WordWrap
                     }
 
                     Column {
                         width: parent.width
                         spacing: 8
 
-                         TextEdit {
+                        TextEdit {
                             id: updateCmdText
                             text: "sudo pacman -Syu\nflatpak update"
-                             color: "#c0d0a0"
+                            color: "#c0d0a0"
                             font.pixelSize: 15
                             font.family: "Monospace"
                             readOnly: true
-                             selectByMouse: true
+                            selectByMouse: true
                             anchors.horizontalCenter: parent.horizontalCenter
                             horizontalAlignment: TextEdit.AlignHCenter
-                             wrapMode: TextEdit.WrapAnywhere
+                            wrapMode: TextEdit.WrapAnywhere
                         }
 
                         Button {
                             anchors.horizontalCenter: parent.horizontalCenter
-                             text: "Copy"
+                            text: "Copy"
                             font.pixelSize: 14
 
                             background: Rectangle {
-                                 radius: 6
+                                radius: 6
                                 color: "#b0ac63"
                                 border.color: Qt.darker("#555839", 1.2)
-                                 border.width: 1
+                                border.width: 1
                             }
 
                             contentItem: Text {
-                                 text: parent.text
+                                text: parent.text
                                 font: parent.font
                                 color: "#383e35"
-                                 horizontalAlignment: Text.AlignHCenter
+                                horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
 
                             onClicked: {
-                                 copyProcess.command = ["wl-copy", updateCmdText.text]
+                                copyProcess.command = ["wl-copy", updateCmdText.text]
                                 copyProcess.running = false
                                 copyProcess.running = true
-                             }
+                            }
                         }
                     }
 
                     // ─── Network Info ───
-                     Rectangle {
+                    Rectangle {
                         width: parent.width
                         implicitHeight: netHeader.implicitHeight + 20
                         radius: 10
-                         color: Qt.rgba(0.22, 0.24, 0.21, 0.7)
+                        color: Qt.rgba(0.22, 0.24, 0.21, 0.7)
                         border.color: "#555839"
                         border.width: 1
 
                         Column {
-                             id: netHeader
+                            id: netHeader
                             width: parent.width - 20
                             anchors.centerIn: parent
-                             spacing: 8
+                            spacing: 8
                             Text {
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                 text: "Network Info"
+                                text: "Network Info"
                                 color: "#b0ac63"
                                 font.pixelSize: 22
-                                 font.family: "Monospace"
+                                font.family: "Monospace"
                                 font.weight: Font.Bold
                             }
                         }
-                     }
+                    }
 
                     Item { height: 4; width: 1 }
 
@@ -565,12 +565,12 @@ ShellRoot {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
                         text: netSpeed
-                         color: "#d0cc93"
+                        color: "#d0cc93"
                         font.pixelSize: 22
                         font.family: "Monospace"
                     }
 
-                     Rectangle { width: parent.width; height: 1; color: Qt.rgba(1,1,1,0.09) }
+                    Rectangle { width: parent.width; height: 1; color: Qt.rgba(1,1,1,0.09) }
 
                     Text {
                         width: parent.width
@@ -579,7 +579,7 @@ ShellRoot {
                         color: "#d0d0d0"
                         font.pixelSize: 17
                         font.family: "Monospace"
-                         wrapMode: Text.Wrap
+                        wrapMode: Text.Wrap
                     }
 
                     Item { height: 8; width: 1 }
@@ -588,11 +588,11 @@ ShellRoot {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
                         text: internetStatus
-                         color: internetColor
+                        color: internetColor
                         font.pixelSize: 19
                         font.family: "Monospace"
                         font.weight: Font.Bold
-                     }
+                    }
 
                     Item { height: 12; width: 1 }
 
@@ -609,24 +609,24 @@ ShellRoot {
                             radius: 10
                             color: "#2a3b1a"
                             border.color: "#4a6b3a"
-                             border.width: 1
+                            border.width: 1
 
                             Behavior on color {
                                 ColorAnimation { duration: 180 }
-                             }
+                            }
                         }
 
                         contentItem: Text {
                             text: parent.text
-                             font: parent.font
+                            font: parent.font
                             color: "#d0e0b0"
                             horizontalAlignment: Text.AlignHCenter
-                             verticalAlignment: Text.AlignVCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
 
                         onClicked: {
                             openNetworkPanel.running = false
-                             openNetworkPanel.running = true
+                            openNetworkPanel.running = true
                         }
                     }
 
@@ -636,24 +636,24 @@ ShellRoot {
                     Rectangle {
                         width: parent.width
                         implicitHeight: fwHeader.implicitHeight + 20
-                         radius: 10
+                        radius: 10
                         color: Qt.rgba(0.22, 0.24, 0.21, 0.7)
                         border.color: "#555839"
-                         border.width: 1
+                        border.width: 1
 
                         Column {
                             id: fwHeader
                             width: parent.width - 20
-                             anchors.centerIn: parent
+                            anchors.centerIn: parent
                             spacing: 8
                             Text {
-                                 anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.horizontalCenter: parent.horizontalCenter
                                 text: "Firewall Info"
                                 color: "#b0ac63"
-                                 font.pixelSize: 22
+                                font.pixelSize: 22
                                 font.family: "Monospace"
                                 font.weight: Font.Bold
-                             }
+                            }
                         }
                     }
 
@@ -663,75 +663,75 @@ ShellRoot {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
                         text: firewallStatus
-                         color: firewallActive ? "#c0d0a0" : "#ffaaaa"
+                        color: firewallActive ? "#c0d0a0" : "#ffaaaa"
                         font.pixelSize: 18
                         font.family: "Monospace"
                         font.weight: Font.Bold
                     }
 
-                     Text {
+                    Text {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
                         visible: firewallMessage !== ""
-                         text: firewallMessage
+                        text: firewallMessage
                         color: "#e0c070"
                         font.pixelSize: 16
                         font.family: "Monospace"
-                         font.weight: Font.Bold
+                        font.weight: Font.Bold
                     }
 
                     Rectangle {
                         width: parent.width
-                         implicitHeight: fwCol.implicitHeight + 20
+                        implicitHeight: fwCol.implicitHeight + 20
                         color: Qt.rgba(0.18, 0.19, 0.17, 0.65)
                         radius: 6
                         visible: firewallAdvice !== ""
 
-                         Column {
+                        Column {
                             id: fwCol
                             width: parent.width - 20
-                             anchors.centerIn: parent
+                            anchors.centerIn: parent
                             spacing: 8
 
                             TextEdit {
                                 id: firewallCmdText
-                                 width: parent.width
+                                width: parent.width
                                 height: implicitHeight
                                 text: firewallAdvice
-                                 color: "#e0c070"
+                                color: "#e0c070"
                                 font.pixelSize: 15
                                 font.family: "Monospace"
-                                 readOnly: true
+                                readOnly: true
                                 selectByMouse: true
                                 wrapMode: TextEdit.WrapAnywhere
-                                 horizontalAlignment: TextEdit.AlignHCenter
+                                horizontalAlignment: TextEdit.AlignHCenter
                             }
 
                             Button {
-                                 text: "Copy"
+                                text: "Copy"
                                 anchors.horizontalCenter: parent.horizontalCenter
 
                                 background: Rectangle {
-                                     radius: 6
+                                    radius: 6
                                     color: "#b0ac63"
                                     border.color: Qt.darker("#555839", 1.2)
-                                     border.width: 1
+                                    border.width: 1
                                 }
 
                                 contentItem: Text  {
                                     text: parent.text
                                     font: parent.font
-                                     color: "#383e35"
+                                    color: "#383e35"
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
-                                 }
+                                }
 
                                 onClicked: {
                                     copyProcess.command = ["wl-copy", firewallCmdText.text]
-                                     copyProcess.running = false
+                                    copyProcess.running = false
                                     copyProcess.running = true
                                 }
-                             }
+                            }
                         }
                     }
 
@@ -838,18 +838,18 @@ ShellRoot {
                     Rectangle {
                         width: parent.width
                         height: 42
-                         radius: 10
+                        radius: 10
                         color: Qt.rgba(0.22, 0.24, 0.21, 0.7)
                         border.color: "#555839"
-                         border.width: 1
+                        border.width: 1
 
                         Text {
                             anchors.centerIn: parent
-                            text: "Arch Fortress Mode"
-                             color: "#b0ac63"
+                            text: "Lynis Security Audit"
+                            color: "#b0ac63"
                             font.pixelSize: 20
                             font.family: "Monospace"
-                             font.weight: Font.Bold
+                            font.weight: Font.Bold
                         }
                     }
 
@@ -870,7 +870,7 @@ ShellRoot {
                         text: lynisInstalled ? "Scan System" : "Install Lynis"
                         anchors.horizontalCenter: parent.horizontalCenter
                         width: 160
-                         height: 40
+                        height: 40
 
                         font.pixelSize: 15
                         font.family: "Monospace"
@@ -879,15 +879,15 @@ ShellRoot {
                             radius: 8
                             color: lynisInstalled ? "#b0ac63" : "#cc6666"
                             border.color: Qt.darker("#555839", 1.2)
-                             border.width: 1
+                            border.width: 1
                         }
 
                         contentItem: Text {
                             text: parent.text
-                             font: parent.font
+                            font: parent.font
                             color: lynisInstalled ? "#383e35" : "#ffffff"
                             horizontalAlignment: Text.AlignHCenter
-                             verticalAlignment: Text.AlignVCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
 
                         onClicked: {
