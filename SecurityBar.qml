@@ -36,6 +36,7 @@ ShellRoot {
     // ─── Arch Updates Properties ──────────────────────
     property string lastUpdateText: "Last updated: checking..."
     property string pendingUpdatesText: "Checking..."
+
     property bool   updatesOutdated: false
     property bool   updatesChecking: true
 
@@ -135,9 +136,7 @@ ShellRoot {
     // ─── Firewall Process (UFW + firewalld) ──────────────────
     Process {
         id: firewallProc
-        command: ["sh", "-c",
-        "if command -v ufw >/dev/null 2>&1;\nthen\necho 'ufw'\nelif command -v firewall-cmd >/dev/null 2>&1;\nthen\necho 'firewalld'\nelse\n    echo 'none'\n    fi"
-        ]
+        command: ["sh", "-c", "if command -v ufw >/dev/null 2>&1;\nthen\necho 'ufw'\nelif command -v firewall-cmd >/dev/null 2>&1;\nthen\necho 'firewalld'\nelse\n    echo 'none'\n    fi"]
 
         stdout: SplitParser {
             onRead: function(line) {
@@ -157,7 +156,6 @@ ShellRoot {
                         firewallAdvice = "sudo firewall-cmd --state\nsudo firewall-cmd --list-all"
                     }
                     else {
-                        // No firewall found
                         firewallStatus = "No Firewall Detected"
                         firewallActive = false
                         firewallMessage = "A firewall is recommended"
@@ -270,13 +268,17 @@ ShellRoot {
         }
     }
 
-    // ─── Copy helper process ──────────────────────────
+    // ─── Process Framework Handles ────────────────────
     Process {
         id: copyProcess
     }
 
     Process {
         id: notifyProc
+    }
+
+    Process {
+        id: scanAurScriptProc
     }
 
     // ─── Launcher for NetworkSecurityBar ──────────────
@@ -325,18 +327,12 @@ ShellRoot {
         running: true
         repeat: true
         onTriggered: {
-            netSpeedProc.running = false;
-            netSpeedProc.running = true
-            localIPProc.running  = false;
-            localIPProc.running  = true
-            internetCheckProc.running = false;
-            internetCheckProc.running = true
-            firewallProc.running = false;
-            firewallProc.running = true
-            malwareProc.running = false;
-            malwareProc.running = true
-            lynisCheckProc.running = false;
-            lynisCheckProc.running = true
+            netSpeedProc.running = false; netSpeedProc.running = true
+            localIPProc.running  = false; localIPProc.running  = true
+            internetCheckProc.running = false; internetCheckProc.running = true
+            firewallProc.running = false; firewallProc.running = true
+            malwareProc.running = false; malwareProc.running = true
+            lynisCheckProc.running = false; lynisCheckProc.running = true
         }
     }
 
@@ -346,7 +342,10 @@ ShellRoot {
         implicitWidth: 400
         visible: true
         color: "transparent"
+
+        // Wayland Compositor Focus Directives
         WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.keyboardFocus: WlrLayershell.OnDemand
         exclusiveZone: 0
 
         Rectangle {
@@ -411,7 +410,7 @@ ShellRoot {
 
                     Item { height: 8; width: 1 }
 
-                    // ─── Arch + Flatpak Updates (moved to top) ───
+                    // ─── Arch + Flatpak Updates ───
                     Rectangle {
                         width: parent.width
                         height: 42
@@ -575,7 +574,7 @@ ShellRoot {
                     Text {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
-                        text: "Local IP:   " + localIP
+                        text: "Local IP: " + localIP
                         color: "#d0d0d0"
                         font.pixelSize: 17
                         font.family: "Monospace"
@@ -599,7 +598,7 @@ ShellRoot {
                     Button {
                         text: "Network Details →"
                         anchors.horizontalCenter: parent.horizontalCenter
-                        width:  240
+                        width: 240
                         height: 48
 
                         font.pixelSize: 16
@@ -718,7 +717,7 @@ ShellRoot {
                                     border.width: 1
                                 }
 
-                                contentItem: Text  {
+                                contentItem: Text {
                                     text: parent.text
                                     font: parent.font
                                     color: "#383e35"
@@ -764,7 +763,6 @@ ShellRoot {
 
                     Item { height: 6; width: 1 }
 
-                    // Status output shown only when installed
                     Text {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
@@ -776,7 +774,6 @@ ShellRoot {
                         font.weight: Font.Bold
                     }
 
-                    // Installation instructions box shown only when NOT installed
                     Rectangle {
                         width: parent.width
                         implicitHeight: malInstCol.implicitHeight + 20
@@ -834,7 +831,122 @@ ShellRoot {
 
                     Item { height: 16; width: 1 }
 
-                    // ─── Arch Fortress Mode ───
+                    // ─── Scan AUR Package Section ───
+                    Rectangle {
+                        width: parent.width
+                        implicitHeight: aurHeader.implicitHeight + 20
+                        radius: 10
+                        color: Qt.rgba(0.22, 0.24, 0.21, 0.7)
+                        border.color: "#555839"
+                        border.width: 1
+
+                        Column {
+                            id: aurHeader
+                            width: parent.width - 20
+                            anchors.centerIn: parent
+                            spacing: 8
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "Scan AUR Package"
+                                color: "#b0ac63"
+                                font.pixelSize: 22
+                                font.family: "Monospace"
+                                font.weight: Font.Bold
+                            }
+                        }
+                    }
+
+                    Item { height: 6; width: 1 }
+
+                    Rectangle {
+                        width: parent.width
+                        implicitHeight: aurScanCol.implicitHeight + 20
+                        color: Qt.rgba(0.18, 0.19, 0.17, 0.65)
+                        radius: 6
+
+                        Column {
+                            id: aurScanCol
+                            width: parent.width - 20
+                            anchors.centerIn: parent
+                            spacing: 10
+
+                            // Input Box Wrapper
+                            Rectangle {
+                                width: parent.width - 20
+                                height: 36
+                                color: "#1a1b1e"
+                                border.color: aurInput.activeFocus ? "#b0ac63" : "#444632"
+                                border.width: 1
+                                radius: 6
+                                anchors.horizontalCenter: parent.horizontalCenter
+
+                                TextInput {
+                                    id: aurInput
+                                    anchors.fill: parent
+                                    anchors.margins: 6
+                                    color: "#dde5a2"
+                                    font.pixelSize: 15
+                                    font.family: "Monospace"
+                                    selectByMouse: true
+                                    focus: false
+                                    verticalAlignment: Text.AlignVCenter
+
+                                    Text {
+                                        text: "Enter package name..."
+                                        color: "#555839"
+                                        font: parent.font
+                                        visible: !parent.text && !parent.activeFocus
+                                    }
+
+                                    onAccepted: runAurScanButton.clicked()
+                                }
+                            }
+
+                            Button {
+                                id: runAurScanButton
+                                text: "Launch Security Scan"
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                width: 180
+                                height: 38
+                                enabled: aurInput.text.trim() !== ""
+
+                                background: Rectangle {
+                                    radius: 6
+                                    color: parent.enabled ? "#b0ac63" : "#444632"
+                                    border.color: Qt.darker("#555839", 1.2)
+                                    border.width: 1
+                                }
+
+                                contentItem: Text {
+                                    text: parent.text
+                                    font.pixelSize: 14
+                                    font.family: "Monospace"
+                                    color: parent.enabled ? "#383e35" : "#888888"
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+
+                                onClicked: {
+                                    let pkgName = aurInput.text.trim();
+                                    if (pkgName !== "") {
+                                        scanAurScriptProc.command = [
+                                            "kitty",
+                                            "--hold",
+                                            "/home/ppk/.config/quickshell/SecurityBar/scan-aur-package.sh",
+                                            pkgName
+                                        ];
+                                        scanAurScriptProc.running = false;
+                                        scanAurScriptProc.running = true;
+                                        aurInput.text = "";
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Item { height: 16; width: 1 }
+
+                    // ─── Lynis Security Audit Section ───
                     Rectangle {
                         width: parent.width
                         height: 42
@@ -855,7 +967,6 @@ ShellRoot {
 
                     Item { height: 12; width: 1 }
 
-                    // Info text shown only when Lynis is not installed
                     Text {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
