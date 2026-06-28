@@ -21,5 +21,4 @@ if ! systemctl is-active --quiet NetworkManager; then
 fi
 
 # 4. Launch OSD (Restoring Software Backend for Layout Consistency)
-# This matches the environment used for your other OSDs in hyprland.conf
 QT_QUICK_BACKEND=software quickshell -p "$QML_PATH" &
