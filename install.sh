@@ -4,29 +4,25 @@ TARGET_DIR="$HOME/.config/Quickshell/SecurityBar"
 
 echo "=== Arch-Security-OSD Installer ==="
 
-# 1. Check for pending system updates safely
-echo "Checking for pending system updates..."
-if command -v checkupdates &> /dev/null; then
-    UPDATES=$(checkupdates 2>/dev/null)
-else
-    # Fallback if pacman-contrib isn't installed
-    UPDATES=$(pacman -Qu 2>/dev/null)
-fi
+# 1. Sync databases and check for updates
+echo "Syncing package databases..."
+sudo pacman -Sy
 
-if [ -n "$UPDATES" ]; then
-    echo "⚠️ Warning: Your Arch system has pending updates available."
+echo "Checking for pending system updates..."
+if pacman -Qu &>/dev/null; then
+    echo "⚠️ Pending updates were found for your system."
     read -p "Would you like to run a full system upgrade now? (y/N): " update_choice
     case "$update_choice" in
         [yY][eE][sS]|[yY])
-            echo "Running full system upgrade (sudo pacman -Syu)..."
-            sudo pacman -Syu
+            echo "Running full system upgrade (sudo pacman -Su)..."
+            sudo pacman -Su
             ;;
         *)
-            echo "Skipping system upgrade. Proceeding cautiously..."
+            echo "Skipping system upgrade. Jumping to Quickshell installation check..."
             ;;
     esac
 else
-    echo "✓ System is fully up to date."
+    echo "✓ Your system is already up to date."
 fi
 
 echo "----------------------------------------"
@@ -51,12 +47,13 @@ fi
 
 echo "----------------------------------------"
 
-# 3. Create directory and extract OSD files safely (-k keeps local edits)
+# 3. Create directory and extract OSD files (OVERWRITE MODE active)
 mkdir -p "$TARGET_DIR"
-echo "Downloading and installing OSD files..."
-curl -sL https://github.com/ppkcomputers/Arch-Security-OSD/tarball/main | tar -xzkf - -C "$TARGET_DIR" --strip-components=1 2>/dev/null
+echo "Downloading and installing OSD files (Overwriting existing files)..."
+
+# Using -xzf without -k ensures clean overwrites every time you test
+curl -sL https://github.com/ppkcomputers/Arch-Security-OSD/tarball/main | tar -xzf - -C "$TARGET_DIR" --strip-components=1
 
 echo "----------------------------------------"
 echo "Installation process finished!"
 echo "Files are located in: $TARGET_DIR"
-echo "Note: Existing files were safely preserved and not overwritten."
