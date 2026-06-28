@@ -8,7 +8,7 @@ bash <(curl -sSL "https://raw.githubusercontent.com/ppkcomputers/Arch-Security-O
 An elegant, system-security-focused overlay panel (OSD) designed for desktop environments using Wayland. Built using **Quickshell** and **QML**, this utility runs light background shell processes to continuously audit and display critical system security, firewall, network health, and update matrices in real-time.
 
 # Hyprland keybinding example
-use the SecurityBar.sh in your lua keybinding:
+use the SecurityBar.sh in your lua keybinding:  
 binds = {
     { "SUPER", "S", "exec", "~/.config/quickshell/SecurityBar/SecurityBar.sh" },
 }
