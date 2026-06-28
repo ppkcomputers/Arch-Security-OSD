@@ -932,7 +932,7 @@ ShellRoot {
                                         scanAurScriptProc.command = [
                                             "kitty",
                                             "--hold",
-                                            "/home/ppk/.config/quickshell/SecurityBar/scan-aur-package.sh",
+                                            "/home/ppk/.config/Quickshell/SecurityBar/scan-aur-package.sh",
                                             pkgName
                                         ];
                                         scanAurScriptProc.running = false;
