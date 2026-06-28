@@ -289,7 +289,7 @@ ShellRoot {
             "QT_QUICK_BACKEND=software",
             "quickshell",
             "--path",
-            "/home/ppk/.config/quickshell/NetworkSecurityBar/NetworkSecurityBar.qml"
+            "/home/ppk/.config/Quickshell/SecurityBar/NetworkSecurityBar.qml"
         ]
     }
 
