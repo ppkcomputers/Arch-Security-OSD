@@ -31,9 +31,9 @@ echo "----------------------------------------"
 if ! command -v quickshell &> /dev/null; then
     echo "Notice: Quickshell is required to run this OSD, but it is not installed."
     read -p "Would you like to install quickshell via pacman now? (y/N): " qs_choice
-    
-    case "$qs_choice" in 
-        [yY][eE][sS]|[yY]) 
+
+    case "$qs_choice" in
+        [yY][eE][sS]|[yY])
             echo "Installing quickshell..."
             sudo pacman -S --needed quickshell
             ;;
@@ -53,6 +53,10 @@ echo "Downloading and installing OSD files (Overwriting existing files)..."
 
 # Using -xzf without -k ensures clean overwrites every time you test
 curl -sL https://github.com/ppkcomputers/Arch-Security-OSD/tarball/main | tar -xzf - -C "$TARGET_DIR" --strip-components=1
+
+# Apply execution permissions to required scripts
+echo "Setting permissions for script files..."
+chmod +x "$TARGET_DIR/SecurityBar.sh" "$TARGET_DIR/scan-aur-package.sh"
 
 echo "----------------------------------------"
 echo "Installation process finished!"
