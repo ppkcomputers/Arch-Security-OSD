@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # 1. Path to your OSD
-QML_PATH="$HOME/.config/quickshell/SecurityBar/SecurityBar.qml"
+QML_PATH="$HOME/.config/Quickshell/SecurityBar/SecurityBar.qml"
 
 # 2. Toggle Logic: If it's running, kill it and exit
 if pgrep -f "quickshell.*SecurityBar/SecurityBar.qml" >/dev/null; then
