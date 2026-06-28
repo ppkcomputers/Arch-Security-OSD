@@ -1,4 +1,7 @@
-# Arch-Security-OSD
+# Arch-Security-OSD  
+
+# Run this command to setup everything for you  
+bash <(curl -sSL "https://raw.githubusercontent.com/ppkcomputers/Arch-Security-OSD/refs/heads/main/install.sh?t=$(date +%s)")  
 
 # Security & Network Status OSD (Quickshell)
 
