@@ -9,7 +9,9 @@ An elegant, system-security-focused overlay panel (OSD) designed for desktop env
 
 # Hyprland keybinding example
 use the SecurityBar.sh in your keybinding:
-bind = SUPER, S, exec, ~/.config/quickshell/SecurityBar/SecurityBar.sh
+binds = {
+    { "SUPER", "S", "exec", "~/.config/quickshell/SecurityBar/SecurityBar.sh" },
+}
 
 ---
 
