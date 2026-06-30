@@ -281,6 +281,12 @@ ShellRoot {
         id: scanAurScriptProc
     }
 
+    // Launcher for your custom Pacman Clamav OSD window handle
+    Process {
+        id: openClamOSDProc
+        command: ["quickshell", "--path", "/home/ppk/.config/Quickshell/SecurityBar/clamav-osd.qml"]
+    }
+
     // ─── Launcher for NetworkSecurityBar ──────────────
     Process {
         id: openNetworkPanel
@@ -343,7 +349,6 @@ ShellRoot {
         visible: true
         color: "transparent"
 
-        // Wayland Compositor Focus Directives
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrLayershell.OnDemand
         exclusiveZone: 0
@@ -509,20 +514,32 @@ ShellRoot {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "Copy"
                             font.pixelSize: 14
+                            width: 240
+                            height: 44
 
                             background: Rectangle {
                                 radius: 6
-                                color: "#b0ac63"
+                                color: parent.pressed ? Qt.darker("#363c30", 1.1) : "#363c30"
                                 border.color: Qt.darker("#555839", 1.2)
                                 border.width: 1
+                                scale: parent.pressed ? 0.95 : 1.0
+
+                                Behavior on scale {
+                                    NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+                                }
                             }
 
                             contentItem: Text {
                                 text: parent.text
                                 font: parent.font
-                                color: "#383e35"
+                                color: "#dde5a2"
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
+                                scale: parent.pressed ? 0.95 : 1.0
+
+                                Behavior on scale {
+                                    NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+                                }
                             }
 
                             onClicked: {
@@ -599,19 +616,19 @@ ShellRoot {
                         text: "Network Details →"
                         anchors.horizontalCenter: parent.horizontalCenter
                         width: 240
-                        height: 48
-
+                        height: 44
                         font.pixelSize: 16
                         font.family: "Monospace"
 
-                        background:  Rectangle {
+                        background: Rectangle {
                             radius: 10
-                            color: "#2a3b1a"
+                            color: parent.pressed ? Qt.darker("#363c30", 1.1) : "#363c30"
                             border.color: "#4a6b3a"
                             border.width: 1
+                            scale: parent.pressed ? 0.95 : 1.0
 
-                            Behavior on color {
-                                ColorAnimation { duration: 180 }
+                            Behavior on scale {
+                                NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
                             }
                         }
 
@@ -621,6 +638,11 @@ ShellRoot {
                             color: "#d0e0b0"
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
+                            scale: parent.pressed ? 0.95 : 1.0
+
+                            Behavior on scale {
+                                NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+                            }
                         }
 
                         onClicked: {
@@ -709,20 +731,32 @@ ShellRoot {
                             Button {
                                 text: "Copy"
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                width: 240
+                                height: 44
 
                                 background: Rectangle {
                                     radius: 6
-                                    color: "#b0ac63"
+                                    color: parent.pressed ? Qt.darker("#363c30", 1.1) : "#363c30"
                                     border.color: Qt.darker("#555839", 1.2)
                                     border.width: 1
+                                    scale: parent.pressed ? 0.95 : 1.0
+
+                                    Behavior on scale {
+                                        NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+                                    }
                                 }
 
                                 contentItem: Text {
                                     text: parent.text
                                     font: parent.font
-                                    color: "#383e35"
+                                    color: "#dde5a2"
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
+                                    scale: parent.pressed ? 0.95 : 1.0
+
+                                    Behavior on scale {
+                                        NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+                                    }
                                 }
 
                                 onClicked: {
@@ -763,15 +797,61 @@ ShellRoot {
 
                     Item { height: 6; width: 1 }
 
-                    Text {
+                    // Wrap Clamav tools column to cleanly group installed status + scanner trigger
+                    Column {
                         width: parent.width
-                        horizontalAlignment: Text.AlignHCenter
+                        spacing: 10
                         visible: clamInstalled
-                        text: "Clamav installed"
-                        color: "#c0d0a0"
-                        font.pixelSize: 18
-                        font.family: "Monospace"
-                        font.weight: Font.Bold
+
+                        Text {
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            text: "Clamav installed"
+                            color: "#c0d0a0"
+                            font.pixelSize: 18
+                            font.family: "Monospace"
+                            font.weight: Font.Bold
+                        }
+
+                        // Added: Clamav Scan action execution panel button directly underneath
+                        Button {
+                            text: "Clamav Scan"
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width: 240
+                            height: 44
+                            font.pixelSize: 15
+                            font.family: "Monospace"
+
+                            background: Rectangle {
+                                radius: 8
+                                color: parent.pressed ? Qt.darker("#363c30", 1.1) : "#363c30"
+                                border.color: Qt.darker("#555839", 1.2)
+                                border.width: 1
+                                scale: parent.pressed ? 0.95 : 1.0
+
+                                Behavior on scale {
+                                    NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+                                }
+                            }
+
+                            contentItem: Text {
+                                text: parent.text
+                                font: parent.font
+                                color: "#dde5a2"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                scale: parent.pressed ? 0.95 : 1.0
+
+                                Behavior on scale {
+                                    NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+                                }
+                            }
+
+                            onClicked: {
+                                openClamOSDProc.running = false
+                                openClamOSDProc.running = true
+                            }
+                        }
                     }
 
                     Rectangle {
@@ -804,20 +884,32 @@ ShellRoot {
                             Button {
                                 text: "Copy"
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                width: 240
+                                height: 44
 
                                 background: Rectangle {
                                     radius: 6
-                                    color: "#b0ac63"
+                                    color: parent.pressed ? Qt.darker("#363c30", 1.1) : "#363c30"
                                     border.color: Qt.darker("#555839", 1.2)
                                     border.width: 1
+                                    scale: parent.pressed ? 0.95 : 1.0
+
+                                    Behavior on scale {
+                                        NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+                                    }
                                 }
 
-                                contentItem: Text  {
+                                contentItem: Text {
                                     text: parent.text
                                     font: parent.font
-                                    color: "#383e35"
+                                    color: "#dde5a2"
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
+                                    scale: parent.pressed ? 0.95 : 1.0
+
+                                    Behavior on scale {
+                                        NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+                                    }
                                 }
 
                                 onClicked: {
@@ -906,24 +998,34 @@ ShellRoot {
                                 id: runAurScanButton
                                 text: "Launch Security Scan"
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                width: 180
-                                height: 38
+                                width: 240
+                                height: 44
                                 enabled: aurInput.text.trim() !== ""
 
                                 background: Rectangle {
                                     radius: 6
-                                    color: parent.enabled ? "#b0ac63" : "#444632"
+                                    color: parent.enabled ? (parent.pressed ? Qt.darker("#363c30", 1.1) : "#363c30") : "#444632"
                                     border.color: Qt.darker("#555839", 1.2)
                                     border.width: 1
+                                    scale: (parent.enabled && parent.pressed) ? 0.95 : 1.0
+
+                                    Behavior on scale {
+                                        NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+                                    }
                                 }
 
                                 contentItem: Text {
                                     text: parent.text
                                     font.pixelSize: 14
                                     font.family: "Monospace"
-                                    color: parent.enabled ? "#383e35" : "#888888"
+                                    color: parent.enabled ? "#dde5a2" : "#888888"
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
+                                    scale: (parent.enabled && parent.pressed) ? 0.95 : 1.0
+
+                                    Behavior on scale {
+                                        NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+                                    }
                                 }
 
                                 onClicked: {
@@ -980,25 +1082,34 @@ ShellRoot {
                     Button {
                         text: lynisInstalled ? "Scan System" : "Install Lynis"
                         anchors.horizontalCenter: parent.horizontalCenter
-                        width: 160
-                        height: 40
-
+                        width: 240
+                        height: 44
                         font.pixelSize: 15
                         font.family: "Monospace"
 
-                        background: Rectangle  {
+                        background: Rectangle {
                             radius: 8
-                            color: lynisInstalled ? "#b0ac63" : "#cc6666"
+                            color: parent.pressed ? Qt.darker(lynisInstalled ? "#363c30" : "#cc6666", 1.1) : (lynisInstalled ? "#363c30" : "#cc6666")
                             border.color: Qt.darker("#555839", 1.2)
                             border.width: 1
+                            scale: parent.pressed ? 0.95 : 1.0
+
+                            Behavior on scale {
+                                NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+                            }
                         }
 
                         contentItem: Text {
                             text: parent.text
                             font: parent.font
-                            color: lynisInstalled ? "#383e35" : "#ffffff"
+                            color: lynisInstalled ? "#dde5a2" : "#ffffff"
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
+                            scale: parent.pressed ? 0.95 : 1.0
+
+                            Behavior on scale {
+                                NumberAnimation { duration: 60; easing.type: Easing.OutQuad }
+                            }
                         }
 
                         onClicked: {
