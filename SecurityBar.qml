@@ -51,49 +51,49 @@ ShellRoot {
         stdout: SplitParser {
             onRead: function(line) {
                 if (!line) return
-                    let trimmed = line.trim()
-                    if (trimmed === "" || trimmed === "0 0") {
-                        netSpeed = "0 KB/s ↓↑ 0 KB/s"
-                        return
-                    }
+                let trimmed = line.trim()
+                if (trimmed === "" || trimmed === "0 0") {
+                     netSpeed = "0 KB/s ↓↑ 0 KB/s"
+                     return
+                }
 
-                    let parts = trimmed.split(/\s+/)
-                    if (parts.length !== 2) return
+                let parts = trimmed.split(/\s+/)
+                if (parts.length !== 2) return
 
-                        let rx = parseFloat(parts[0]) || 0
-                        let tx = parseFloat(parts[1]) || 0
+                let rx = parseFloat(parts[0]) || 0
+                let tx = parseFloat(parts[1]) || 0
 
-                        let now = new Date()
-                        let deltaMs = now.getTime() - lastNetCheck.getTime()
-                        let deltaSec = deltaMs / 1000
+                let now = new Date()
+                let deltaMs = now.getTime() - lastNetCheck.getTime()
+                let deltaSec = deltaMs / 1000
 
-                        if (deltaSec < 0.8 || deltaSec > 15 || isNaN(deltaSec)) {
-                            lastRxBytes = rx
-                            lastTxBytes = tx
-                            lastNetCheck = now
-                            netSpeed = "0 KB/s ↓↑ 0 KB/s"
-                            return
-                        }
+                if (deltaSec < 0.8 || deltaSec > 15 || isNaN(deltaSec)) {
+                     lastRxBytes = rx
+                     lastTxBytes = tx
+                     lastNetCheck = now
+                     netSpeed = "0 KB/s ↓↑ 0 KB/s"
+                     return
+                }
 
-                        let downBps = (rx - lastRxBytes) / deltaSec
-                        let upBps   = (tx - lastTxBytes) / deltaSec
+                let downBps = (rx - lastRxBytes) / deltaSec
+                let upBps   = (tx - lastTxBytes) / deltaSec
 
-                        lastRxBytes = rx
-                        lastTxBytes = tx
-                        lastNetCheck = now
+                lastRxBytes = rx
+                lastTxBytes = tx
+                lastNetCheck = now
 
-                        netSpeed = formatSpeed(downBps) + " ↓↑ " + formatSpeed(upBps)
+                netSpeed = formatSpeed(downBps) + " ↓↑ " + formatSpeed(upBps)
             }
         }
     }
 
     function formatSpeed(bps) {
         if (bps < 1024) return "0 KB/s"
-            let kbps = bps / 1024
-            if (kbps < 1024) return Math.round(kbps) + " KB/s"
-                let mbps = kbps / 1024
-                if (mbps < 1024) return mbps.toFixed(1) + " MB/s"
-                    return (mbps / 1024).toFixed(1) + " GB/s"
+        let kbps = bps / 1024
+        if (kbps < 1024) return Math.round(kbps) + " KB/s"
+        let mbps = kbps / 1024
+        if (mbps < 1024) return mbps.toFixed(1) + " MB/s"
+        return (mbps / 1024).toFixed(1) + " GB/s"
     }
 
     // ─── Other Network Processes ──────────────────────
@@ -114,21 +114,21 @@ ShellRoot {
         stdout: SplitParser {
             onRead: function(line) {
                 if (!line) return
-                    let status = line.trim()
+                let status = line.trim()
 
-                    if (status === "full") {
-                        internetStatus = "Internet UP"
-                        internetColor  = "#c0d0a0"
-                    } else if (status === "none") {
-                        internetStatus = "Internet Down"
-                        internetColor  = "#ff6666"
-                    } else if (status === "limited" || status === "portal") {
-                        internetStatus = "Internet Limited"
-                        internetColor  = "#ffcc77"
-                    } else {
-                        internetStatus = "Internet ? (" + status + ")"
-                        internetColor  = "#9999ff"
-                    }
+                if (status === "full") {
+                    internetStatus = "Internet UP"
+                    internetColor  = "#c0d0a0"
+                } else if (status === "none") {
+                    internetStatus = "Internet Down"
+                    internetColor  = "#ff6666"
+                } else if (status === "limited" || status === "portal") {
+                    internetStatus = "Internet Limited"
+                    internetColor  = "#ffcc77"
+                } else {
+                    internetStatus = "Internet ? (" + status + ")"
+                    internetColor  = "#9999ff"
+                }
             }
         }
     }
@@ -141,30 +141,30 @@ ShellRoot {
         stdout: SplitParser {
             onRead: function(line) {
                 if (!line) return
-                    let trimmed = line.trim()
+                let trimmed = line.trim()
 
-                    if (trimmed === "ufw") {
-                        firewallStatus = "UFW Installed"
-                        firewallActive = true
-                        firewallMessage = "Check Status:"
-                        firewallAdvice = "sudo ufw status verbose"
-                    }
-                    else if (trimmed === "firewalld") {
-                        firewallStatus = "firewalld Installed"
-                        firewallActive = true
-                        firewallMessage = "Check Status:"
-                        firewallAdvice = "sudo firewall-cmd --state\nsudo firewall-cmd --list-all"
-                    }
-                    else {
-                        firewallStatus = "No Firewall Detected"
-                        firewallActive = false
-                        firewallMessage = "A firewall is recommended"
-                        firewallAdvice = "Install one of the following:\n\n" +
-                        "UFW (recommended for simplicity):\n" +
-                        "sudo pacman -S ufw && sudo ufw enable && sudo systemctl enable --now ufw\n\n" +
-                        "firewalld:\n" +
-                        "sudo pacman -S firewalld && sudo systemctl enable --now firewalld"
-                    }
+                if (trimmed === "ufw") {
+                    firewallStatus = "UFW Installed"
+                    firewallActive = true
+                    firewallMessage = "Check Status:"
+                    firewallAdvice = "sudo ufw status verbose"
+                }
+                else if (trimmed === "firewalld") {
+                    firewallStatus = "firewalld Installed"
+                    firewallActive = true
+                    firewallMessage = "Check Status:"
+                    firewallAdvice = "sudo firewall-cmd --state\nsudo firewall-cmd --list-all"
+                }
+                else {
+                    firewallStatus = "No Firewall Detected"
+                    firewallActive = false
+                    firewallMessage = "A firewall is recommended"
+                    firewallAdvice = "Install one of the following:\n\n" +
+                    "UFW (recommended for simplicity):\n" +
+                    "sudo pacman -S ufw && sudo ufw enable && sudo systemctl enable --now ufw\n\n" +
+                    "firewalld:\n" +
+                    "sudo pacman -S firewalld && sudo systemctl enable --now firewalld"
+                }
             }
         }
     }
@@ -284,7 +284,7 @@ ShellRoot {
     // Launcher for your custom Pacman Clamav OSD window handle
     Process {
         id: openClamOSDProc
-        command: ["quickshell", "--path", "/home/ppk/.config/Quickshell/SecurityBar/clamav-osd.qml"]
+        command: ["quickshell", "--path", Quickshell.shellPath("clamav-osd.qml")]
     }
 
     // ─── Launcher for NetworkSecurityBar ──────────────
@@ -295,7 +295,7 @@ ShellRoot {
             "QT_QUICK_BACKEND=software",
             "quickshell",
             "--path",
-            "/home/ppk/.config/Quickshell/SecurityBar/NetworkSecurityBar.qml"
+            Quickshell.shellPath("NetworkSecurityBar.qml")
         ]
     }
 
@@ -453,8 +453,8 @@ ShellRoot {
                         text: updatesChecking ? "Checking..." : pendingUpdatesText
                         color: {
                             if (updatesChecking) return "#888888"
-                                if (updatesOutdated) return "#ff4444"
-                                    return pendingUpdatesText.includes("0") ? "#c0d0a0" : "#e0c070"
+                            if (updatesOutdated) return "#ff4444"
+                            return pendingUpdatesText.includes("0") ? "#c0d0a0" : "#e0c070"
                         }
                         font.pixelSize: 16
                         font.family: "Monospace"
@@ -1034,7 +1034,7 @@ ShellRoot {
                                         scanAurScriptProc.command = [
                                             "kitty",
                                             "--hold",
-                                            "/home/ppk/.config/Quickshell/SecurityBar/scan-aur-package.sh",
+                                            Quickshell.shellPath("scan-aur-package.sh"),
                                             pkgName
                                         ];
                                         scanAurScriptProc.running = false;
