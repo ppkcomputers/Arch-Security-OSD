@@ -14,7 +14,19 @@ ShellRoot {
 
     // Deletion animation state properties
     property bool isDeleting: false
-    property int deletionStep: 0 // 0: blinky, 1: ghost2, 2: ghost3, 3: ghost4, 4: gone/blank
+    property int deletionStep: 0 // 0: standard/blinky, 1: ghost2, 2: ghost3, 3: ghost4, 4: gone/blank
+
+    // Animation timeline control states
+    property int introStep: 0 // 0: showing blinky, 1: showing blue ghost, 2: pacman moving/chomp complete
+    property bool chompSequenceActive: false
+    property bool showScore: false
+    property bool showGameOver: false
+    property bool cinematicDone: false
+    property string pacmanMouthSource: "pacman.png"
+
+    // Jitter offsets applied to the 800 text score element
+    property int scoreJitterX: 0
+    property int scoreJitterY: 0
 
     Process {
         id: clamScanProc
@@ -34,6 +46,17 @@ ShellRoot {
                     } else {
                         root.threatPath = cleanLine;
                     }
+
+                    // Reset custom cinematic chomp variables
+                    root.introStep = 0;
+                    root.chompSequenceActive = false;
+                    root.showScore = false;
+                    root.showGameOver = false;
+                    root.cinematicDone = false;
+                    root.pacmanMouthSource = "pacman.png";
+
+                    // Kickoff the intro pacing controller
+                    introTimelineTimer.restart();
                 }
             }
         }
@@ -54,7 +77,55 @@ ShellRoot {
         id: deleteFileProc
     }
 
-    // Sequence timer handling the 1-second interval image swaps
+    // Controls the discrete delays before launching the chomp sequence
+    Timer {
+        id: introTimelineTimer
+        interval: 2000 // 2-second increments
+        repeat: true
+        running: false
+        onTriggered: {
+            if (root.introStep === 0) {
+                // Step 0 ended: We've seen blinky for 2s. Now turn him blue.
+                root.introStep = 1;
+            } else if (root.introStep === 1) {
+                // Step 1 ended: We've seen the blue ghost for 2s. Stop timer and launch Pacman.
+                introTimelineTimer.stop();
+                root.introStep = 2;
+                root.chompSequenceActive = true;
+                chompLoopTimer.start();
+                pacmanChompAnim.restart();
+            }
+        }
+    }
+
+    // Handles the 2-second score jitter sequence before transitioning to Game Over
+    Timer {
+        id: jitterDurationTimer
+        interval: 2000
+        repeat: false
+        running: false
+        onTriggered: {
+            jitterEffectTimer.stop();
+            root.showScore = false;
+            root.scoreJitterX = 0;
+            root.scoreJitterY = 0;
+            root.showGameOver = true; // Show game-over.png after score disappears
+        }
+    }
+
+    // Rapid loop timer changing position offsets every 40ms to create a jitter/shake effect
+    Timer {
+        id: jitterEffectTimer
+        interval: 40
+        repeat: true
+        running: false
+        onTriggered: {
+            root.scoreJitterX = (Math.random() * 6) - 3;
+            root.scoreJitterY = (Math.random() * 6) - 3;
+        }
+    }
+
+    // Sequence timer handling the final post-deletion 1-second interval image swaps
     Timer {
         id: deletionSequenceTimer
         interval: 1000
@@ -64,11 +135,31 @@ ShellRoot {
             root.deletionStep++;
             if (root.deletionStep > 4) {
                 deletionSequenceTimer.stop();
-                root.isDeleting = false; // Restores control and button interactivity
-                root.ghostFound = false;  // Clear ghost layout to return to standard view or end state
+                root.isDeleting = false;
+                root.ghostFound = false;
                 root.scanFinished = true;
                 root.statusMessage = "GHOST VAPORIZED SAFE!";
                 root.threatPath = "";
+                root.chompSequenceActive = false;
+                root.showScore = false;
+                root.showGameOver = false;
+                root.cinematicDone = false;
+                root.introStep = 0;
+            }
+        }
+    }
+
+    // Rapid loop timer to flip textures back and forth during movement
+    Timer {
+        id: chompLoopTimer
+        interval: 150
+        repeat: true
+        running: false
+        onTriggered: {
+            if (root.pacmanMouthSource === "pacman.png") {
+                root.pacmanMouthSource = "pacman3.png";
+            } else {
+                root.pacmanMouthSource = "pacman.png";
             }
         }
     }
@@ -81,6 +172,17 @@ ShellRoot {
         isDeleting = false;
         deletionStep = 0;
         isScanning = true;
+        chompSequenceActive = false;
+        showScore = false;
+        showGameOver = false;
+        cinematicDone = false;
+        introStep = 0;
+        scoreJitterX = 0;
+        scoreJitterY = 0;
+        introTimelineTimer.stop();
+        chompLoopTimer.stop();
+        jitterDurationTimer.stop();
+        jitterEffectTimer.stop();
         clamScanProc.running = false;
         clamScanProc.running = true;
     }
@@ -90,7 +192,7 @@ ShellRoot {
 
         root.isDeleting = true;
         root.statusMessage = "Purging Threat Source...";
-        root.deletionStep = 1; // Immediately transition to blue ghost2.png
+        root.deletionStep = 1;
         deletionSequenceTimer.start();
 
         // Run system shell remove against tracked threat path target
@@ -184,6 +286,7 @@ ShellRoot {
 
                 // Arcade Monitor Viewport Container
                 Rectangle {
+                    id: arcadeMonitor
                     width: parent.width
                     height: 176
                     color: "#000000"
@@ -199,18 +302,89 @@ ShellRoot {
                         spacing: 15
                         visible: ghostFound || root.isDeleting
 
-                        Image {
-                            id: threatImage
+                        // Interactive Animation Canvas for the left side item
+                        Item {
+                            id: animationCanvas
                             width: (parent.width * 0.35)
                             height: parent.height
-                            fillMode: Image.PreserveAspectFit
-                            // Handles cascading blue fade steps and turns empty ("") on stage 4
-                            source: {
-                                if (root.deletionStep === 1) return "ghost2.png";
-                                if (root.deletionStep === 2) return "ghost3.png";
-                                if (root.deletionStep === 3) return "ghost4.png";
-                                if (root.deletionStep === 4) return "";
-                                return "blinky.png";
+
+                            // The Ghost Graphic (Changes to blue, then stays completely hidden once cinematicDone triggers)
+                            Image {
+                                id: threatImage
+                                anchors.centerIn: parent
+                                width: parent.width
+                                height: parent.height
+                                fillMode: Image.PreserveAspectFit
+                                visible: !root.showScore && !root.showGameOver && !root.cinematicDone
+                                source: {
+                                    if (root.ghostFound && !root.isDeleting) {
+                                        if (root.introStep === 1) return "blue.png";
+                                        if (root.introStep === 2) return "blue.png";
+                                        return "blinky.png";
+                                    }
+                                    if (root.deletionStep === 1) return "ghost2.png";
+                                    if (root.deletionStep === 2) return "ghost3.png";
+                                    if (root.deletionStep === 3) return "ghost4.png";
+                                    if (root.deletionStep === 4) return "";
+                                    return "blinky.png";
+                                }
+                            }
+
+                            // The aqua blue "800" score indicator with dynamic jitter offsets applied
+                            Text {
+                                text: "800"
+                                color: "#00ffff"
+                                font.pixelSize: 24
+                                font.family: "Monospace"
+                                font.bold: true
+                                x: ((parent.width - width) / 2) + root.scoreJitterX
+                                y: ((parent.height - height) / 2) + root.scoreJitterY
+                                visible: root.showScore
+                            }
+
+                            // Game Over image displayed after the score finishes jittering
+                            Image {
+                                id: gameOverImage
+                                anchors.centerIn: parent
+                                width: parent.width
+                                height: parent.height
+                                fillMode: Image.PreserveAspectFit
+                                source: "game-over.png"
+                                visible: root.showGameOver
+                            }
+
+                            // Animated Chomping Pacman Layer
+                            Image {
+                                id: chompingPacman
+                                x: -width // Starts completely off-screen to the left
+                                width: parent.width * 0.8
+                                height: parent.height * 0.8
+                                anchors.verticalCenter: parent.verticalCenter
+                                fillMode: Image.PreserveAspectFit
+                                source: root.pacmanMouthSource
+                                visible: root.chompSequenceActive
+
+                                onXChanged: {
+                                    // Switch on score when pacman overlaps the center point of the vulnerable ghost
+                                    if (x >= (animationCanvas.width / 2) - (width / 2) && !root.showScore && root.chompSequenceActive) {
+                                        root.showScore = true;
+                                        root.cinematicDone = true; // Block blue.png from reappearing
+                                        jitterEffectTimer.start();
+                                        jitterDurationTimer.start();
+                                    }
+                                }
+
+                                NumberAnimation on x {
+                                    id: pacmanChompAnim
+                                    from: -chompingPacman.width
+                                    to: arcadeMonitor.width + chompingPacman.width
+                                    duration: 1800
+                                    running: false
+                                    onFinished: {
+                                        root.chompSequenceActive = false;
+                                        chompLoopTimer.stop();
+                                    }
+                                }
                             }
                         }
 
@@ -288,7 +462,7 @@ ShellRoot {
 
                     Button {
                         id: scanButton
-                        width: (root.ghostFound && !root.isDeleting && root.deletionStep === 0) ? 160 : 240
+                        width: (root.ghostFound && !root.isDeleting && root.deletionStep === 0) ? 120 : 160
                         height: 48
                         enabled: !isScanning && !root.isDeleting
 
@@ -314,8 +488,36 @@ ShellRoot {
                     }
 
                     Button {
+                        id: vtButton
+                        width: (root.ghostFound && !root.isDeleting && root.deletionStep === 0) ? 140 : 160
+                        height: 48
+                        enabled: true
+
+                        background: Rectangle {
+                            radius: 8
+                            color: parent.pressed ? "#1a233a" : "#24304f"
+                            border.color: "#4361ee"
+                            border.width: 1
+                        }
+
+                        contentItem: Text {
+                            text: "Open VirusTotal"
+                            font.pixelSize: 14
+                            font.family: "Monospace"
+                            font.bold: true
+                            color: "#a4b3f6"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: {
+                            Qt.openUrlExternally("https://www.virustotal.com/");
+                        }
+                    }
+
+                    Button {
                         id: deleteButton
-                        width: 160
+                        width: 130
                         height: 48
                         visible: root.ghostFound && !root.isDeleting && root.deletionStep === 0
                         enabled: !isScanning && !root.isDeleting
@@ -344,7 +546,7 @@ ShellRoot {
 
                     Button {
                         id: closeButton
-                        width: (root.ghostFound && !root.isDeleting && root.deletionStep === 0) ? 100 : 120
+                        width: (root.ghostFound && !root.isDeleting && root.deletionStep === 0) ? 80 : 100
                         height: 48
                         // Keeps exit accessible even while deletion runs
                         enabled: true
