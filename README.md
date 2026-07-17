@@ -63,14 +63,3 @@ To unlock the full functionality of the processes wired into the UI loop, ensure
 | `clamav` | *(Optional)* Local binary database signature virus scanner |
 
 ---
-
-## 🛠️ Configuration & Customization
-
-The script maps processes straight to configuration pathways. If you host components or secondary screens across different targets, look into the following `Process` initializations at the top of the file:
-
-```qml
-// Launcher for your secondary Network panel path:
-Process {
-    id: openNetworkPanel
-    command: [ "quickshell", "--path", "/home/YOUR_USER/.config/quickshell/NetworkSecurityBar/NetworkSecurityBar.qml" ]
-}
