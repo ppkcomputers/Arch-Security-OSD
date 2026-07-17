@@ -43,6 +43,30 @@ ShellRoot {
     property int flatpakCount: 0
     property string flatpakPendingText: "Checking..."
 
+    // ─── Kernel Properties ────────────────────────────
+    property string activeKernelVersion: "Checking..."
+
+    // ─── Kernel Version Runtime Process ────────────────
+    Process {
+        id: unameProc
+        command: ["uname", "-r"]
+        stdout: SplitParser {
+            onRead: function(line) {
+                if (line) activeKernelVersion = line.trim()
+            }
+        }
+    }
+
+    // ─── Hardening Execution Terminal Engine ──────────
+    Process {
+        id: runHardeningScriptProc
+        command: [
+            "kitty",
+            "-e",
+            Quickshell.shellPath("hardened-kernel.sh")
+        ]
+    }
+
     // ─── Network Speed Process ────────────────────────
     Process {
         id: netSpeedProc
@@ -51,49 +75,49 @@ ShellRoot {
         stdout: SplitParser {
             onRead: function(line) {
                 if (!line) return
-                let trimmed = line.trim()
-                if (trimmed === "" || trimmed === "0 0") {
-                     netSpeed = "0 KB/s ↓↑ 0 KB/s"
-                     return
-                }
+                    let trimmed = line.trim()
+                    if (trimmed === "" || trimmed === "0 0") {
+                        netSpeed = "0 KB/s ↓↑ 0 KB/s"
+                        return
+                    }
 
-                let parts = trimmed.split(/\s+/)
-                if (parts.length !== 2) return
+                    let parts = trimmed.split(/\s+/)
+                    if (parts.length !== 2) return
 
-                let rx = parseFloat(parts[0]) || 0
-                let tx = parseFloat(parts[1]) || 0
+                        let rx = parseFloat(parts[0]) || 0
+                        let tx = parseFloat(parts[1]) || 0
 
-                let now = new Date()
-                let deltaMs = now.getTime() - lastNetCheck.getTime()
-                let deltaSec = deltaMs / 1000
+                        let now = new Date()
+                        let deltaMs = now.getTime() - lastNetCheck.getTime()
+                        let deltaSec = deltaMs / 1000
 
-                if (deltaSec < 0.8 || deltaSec > 15 || isNaN(deltaSec)) {
-                     lastRxBytes = rx
-                     lastTxBytes = tx
-                     lastNetCheck = now
-                     netSpeed = "0 KB/s ↓↑ 0 KB/s"
-                     return
-                }
+                        if (deltaSec < 0.8 || deltaSec > 15 || isNaN(deltaSec)) {
+                            lastRxBytes = rx
+                            lastTxBytes = tx
+                            lastNetCheck = now
+                            netSpeed = "0 KB/s ↓↑ 0 KB/s"
+                            return
+                        }
 
-                let downBps = (rx - lastRxBytes) / deltaSec
-                let upBps   = (tx - lastTxBytes) / deltaSec
+                        let downBps = (rx - lastRxBytes) / deltaSec
+                        let upBps   = (tx - lastTxBytes) / deltaSec
 
-                lastRxBytes = rx
-                lastTxBytes = tx
-                lastNetCheck = now
+                        lastRxBytes = rx
+                        lastTxBytes = tx
+                        lastNetCheck = now
 
-                netSpeed = formatSpeed(downBps) + " ↓↑ " + formatSpeed(upBps)
+                        netSpeed = formatSpeed(downBps) + " ↓↑ " + formatSpeed(upBps)
             }
         }
     }
 
     function formatSpeed(bps) {
         if (bps < 1024) return "0 KB/s"
-        let kbps = bps / 1024
-        if (kbps < 1024) return Math.round(kbps) + " KB/s"
-        let mbps = kbps / 1024
-        if (mbps < 1024) return mbps.toFixed(1) + " MB/s"
-        return (mbps / 1024).toFixed(1) + " GB/s"
+            let kbps = bps / 1024
+            if (kbps < 1024) return Math.round(kbps) + " KB/s"
+                let mbps = kbps / 1024
+                if (mbps < 1024) return mbps.toFixed(1) + " MB/s"
+                    return (mbps / 1024).toFixed(1) + " GB/s"
     }
 
     // ─── Other Network Processes ──────────────────────
@@ -114,21 +138,21 @@ ShellRoot {
         stdout: SplitParser {
             onRead: function(line) {
                 if (!line) return
-                let status = line.trim()
+                    let status = line.trim()
 
-                if (status === "full") {
-                    internetStatus = "Internet UP"
-                    internetColor  = "#c0d0a0"
-                } else if (status === "none") {
-                    internetStatus = "Internet Down"
-                    internetColor  = "#ff6666"
-                } else if (status === "limited" || status === "portal") {
-                    internetStatus = "Internet Limited"
-                    internetColor  = "#ffcc77"
-                } else {
-                    internetStatus = "Internet ? (" + status + ")"
-                    internetColor  = "#9999ff"
-                }
+                    if (status === "full") {
+                        internetStatus = "Internet UP"
+                        internetColor  = "#c0d0a0"
+                    } else if (status === "none") {
+                        internetStatus = "Internet Down"
+                        internetColor  = "#ff6666"
+                    } else if (status === "limited" || status === "portal") {
+                        internetStatus = "Internet Limited"
+                        internetColor  = "#ffcc77"
+                    } else {
+                        internetStatus = "Internet ? (" + status + ")"
+                        internetColor  = "#9999ff"
+                    }
             }
         }
     }
@@ -141,30 +165,30 @@ ShellRoot {
         stdout: SplitParser {
             onRead: function(line) {
                 if (!line) return
-                let trimmed = line.trim()
+                    let trimmed = line.trim()
 
-                if (trimmed === "ufw") {
-                    firewallStatus = "UFW Installed"
-                    firewallActive = true
-                    firewallMessage = "Check Status:"
-                    firewallAdvice = "sudo ufw status verbose"
-                }
-                else if (trimmed === "firewalld") {
-                    firewallStatus = "firewalld Installed"
-                    firewallActive = true
-                    firewallMessage = "Check Status:"
-                    firewallAdvice = "sudo firewall-cmd --state\nsudo firewall-cmd --list-all"
-                }
-                else {
-                    firewallStatus = "No Firewall Detected"
-                    firewallActive = false
-                    firewallMessage = "A firewall is recommended"
-                    firewallAdvice = "Install one of the following:\n\n" +
-                    "UFW (recommended for simplicity):\n" +
-                    "sudo pacman -S ufw && sudo ufw enable && sudo systemctl enable --now ufw\n\n" +
-                    "firewalld:\n" +
-                    "sudo pacman -S firewalld && sudo systemctl enable --now firewalld"
-                }
+                    if (trimmed === "ufw") {
+                        firewallStatus = "UFW Installed"
+                        firewallActive = true
+                        firewallMessage = "Check Status:"
+                        firewallAdvice = "sudo ufw status verbose"
+                    }
+                    else if (trimmed === "firewalld") {
+                        firewallStatus = "firewalld Installed"
+                        firewallActive = true
+                        firewallMessage = "Check Status:"
+                        firewallAdvice = "sudo firewall-cmd --state\nsudo firewall-cmd --list-all"
+                    }
+                    else {
+                        firewallStatus = "No Firewall Detected"
+                        firewallActive = false
+                        firewallMessage = "A firewall is recommended"
+                        firewallAdvice = "Install one of the following:\n\n" +
+                        "UFW (recommended for simplicity):\n" +
+                        "sudo pacman -S ufw && sudo ufw enable && sudo systemctl enable --now ufw\n\n" +
+                        "firewalld:\n" +
+                        "sudo pacman -S firewalld && sudo systemctl enable --now firewalld"
+                    }
             }
         }
     }
@@ -269,17 +293,9 @@ ShellRoot {
     }
 
     // ─── Process Framework Handles ────────────────────
-    Process {
-        id: copyProcess
-    }
-
-    Process {
-        id: notifyProc
-    }
-
-    Process {
-        id: scanAurScriptProc
-    }
+    Process { id: copyProcess }
+    Process { id: notifyProc }
+    Process { id: scanAurScriptProc }
 
     // Launcher for your custom Pacman Clamav OSD window handle
     Process {
@@ -311,6 +327,7 @@ ShellRoot {
     }
 
     Component.onCompleted: {
+        unameProc.running = true
         netSpeedProc.running = true
         localIPProc.running = true
         internetCheckProc.running = true
@@ -453,8 +470,8 @@ ShellRoot {
                         text: updatesChecking ? "Checking..." : pendingUpdatesText
                         color: {
                             if (updatesChecking) return "#888888"
-                            if (updatesOutdated) return "#ff4444"
-                            return pendingUpdatesText.includes("0") ? "#c0d0a0" : "#e0c070"
+                                if (updatesOutdated) return "#ff4444"
+                                    return pendingUpdatesText.includes("0") ? "#c0d0a0" : "#e0c070"
                         }
                         font.pixelSize: 16
                         font.family: "Monospace"
@@ -797,7 +814,6 @@ ShellRoot {
 
                     Item { height: 6; width: 1 }
 
-                    // Wrap Clamav tools column to cleanly group installed status + scanner trigger
                     Column {
                         width: parent.width
                         spacing: 10
@@ -813,7 +829,6 @@ ShellRoot {
                             font.weight: Font.Bold
                         }
 
-                        // Added: Clamav Scan action execution panel button directly underneath
                         Button {
                             text: "Clamav Scan"
                             anchors.horizontalCenter: parent.horizontalCenter
@@ -962,7 +977,6 @@ ShellRoot {
                             anchors.centerIn: parent
                             spacing: 10
 
-                            // Input Box Wrapper
                             Rectangle {
                                 width: parent.width - 20
                                 height: 36
@@ -1124,7 +1138,81 @@ ShellRoot {
                         }
                     }
 
-                    Item { height: 12; width: 1 }
+                    Item { height: 16; width: 1 }
+
+                    // ─── NEW: Kernel Hardening Section ──────────────────
+                    Rectangle {
+                        width: parent.width
+                        height: 42
+                        radius: 10
+                        color: Qt.rgba(0.22, 0.24, 0.21, 0.7)
+                        border.color: "#555839"
+                        border.width: 1
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Kernel Hardening"
+                            color: "#b0ac63"
+                            font.pixelSize: 20
+                            font.family: "Monospace"
+                            font.weight: Font.Bold
+                        }
+                    }
+
+                    Item { height: 6; width: 1 }
+
+                    Text {
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "Active Version: " + activeKernelVersion
+                        color: "#d0d0d0"
+                        font.pixelSize: 15
+                        font.family: "Monospace"
+                        wrapMode: Text.Wrap
+                    }
+
+                    Item { height: 8; width: 1 }
+
+                    Button {
+                        text: "Harden Kernel"
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 240
+                        height: 44
+                        font.pixelSize: 15
+                        font.family: "Monospace"
+
+                        background: Rectangle {
+                            radius: 8
+                            color: parent.pressed ? Qt.darker("#363c30", 1.1) : "#363c30"
+                            border.color: Qt.darker("#555839", 1.2)
+                            border.width: 1
+                            scale: parent.pressed ? 0.94 : 1.0 // Indent animation (press in)
+
+                            Behavior on scale {
+                                NumberAnimation { duration: 75; easing.type: Easing.OutQuad }
+                            }
+                        }
+
+                        contentItem: Text {
+                            text: parent.text
+                            font: parent.font
+                            color: "#dde5a2"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            scale: parent.pressed ? 0.94 : 1.0 // Text indents together with button
+
+                            Behavior on scale {
+                                NumberAnimation { duration: 75; easing.type: Easing.OutQuad }
+                            }
+                        }
+
+                        onClicked: {
+                            runHardeningScriptProc.running = false
+                            runHardeningScriptProc.running = true
+                        }
+                    }
+
+                    Item { height: 24; width: 1 }
 
                 } // Column
             } // ScrollView
