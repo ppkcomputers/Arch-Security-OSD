@@ -322,7 +322,7 @@ ShellRoot {
             "kitty",
             "sh",
             "-c",
-            "sudo lynis audit system; echo '\nAudit Complete. Press Enter to close.'; read"
+            "sudo lynis audit system; sudo python3 " + Quickshell.shellPath("lynis-parser.py") + "; echo '\nProcess Complete. Press Enter to close.'; read"
         ]
     }
 
